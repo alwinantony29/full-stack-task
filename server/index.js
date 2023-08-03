@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import express from "express";
 import connectDB from "./database/connection.js";
-
+import Auth from "./API/Auth/index.js";
 dotenv.config();
 const app = express()
 app.use(express.urlencoded({ extended: true }));
@@ -16,7 +16,7 @@ app.get("/", async (req, res) => {
         console.log(err);
     }
 })
-
+app.use("/auth",Auth)
 
 
 
