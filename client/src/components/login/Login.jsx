@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -10,6 +10,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+// import { signInWithEmailAndPassword } from "firebase/auth";
+// import { auth } from '../../config/firebase';
 
 
 const defaultTheme = createTheme();
@@ -21,7 +23,18 @@ export default function Login() {
         console.log({
             email: data.get('email'),
             password: data.get('password'),
-        });
+        })
+        // signInWithEmailAndPassword(auth, email, password)
+        //     .then((userCredential) => {
+        //         // Signed in 
+        //         const user = userCredential.user;
+        //         // ...
+        //     })
+        //     .catch((error) => {
+        //         const errorCode = error.code;
+        //         const errorMessage = error.message;
+        //     })
+
     };
 
     return (

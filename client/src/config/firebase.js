@@ -5,7 +5,7 @@ import { GoogleAuthProvider, getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  // apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "pdfextractor-ea23f.firebaseapp.com",
   projectId: "pdfextractor-ea23f",
   storageBucket: "pdfextractor-ea23f.appspot.com",
@@ -16,7 +16,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth();
+const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 // const analytics = getAnalytics(app);
 
