@@ -1,9 +1,11 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 
 const FileUploadForm = () => {
+
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState(null)
-
+    
+    //handles file input
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         const allowedExtensions = /(\.pdf)$/i;
@@ -21,7 +23,6 @@ const FileUploadForm = () => {
         event.preventDefault();
 
         if (selectedFile) {
-            // Handle file upload - you can use fetch or axios to send the file to the backend
             const formData = new FormData();
             formData.append('pdfFile', selectedFile);
         } else {
