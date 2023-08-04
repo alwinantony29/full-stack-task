@@ -4,27 +4,27 @@ import jwt from "jsonwebtoken";
 const Router = express.Router()
 
 
-Router.post("/signup", async (req, res) => {
+Router.post("/signin", async (req, res) => {
     try {
-        const { email, firstName, lastName } = req.body.credentials
+        console.log(req.body);
+        const { email } = req.body.credentials
         let user = await UserModel.findOne({ email });
         if (user) {
             console.log("user found");
-            return res.status(400).json({message:"user with this email already exists"})
         } else {
+            const { firstName, lastName } = req.body.credentials
             console.log("no user found, creating new user!");
             user = new UserModel({ email, firstName, lastName })
             await user.save()
         }
         const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_KEY);
-        res.json({
-            token, user: { email, firstName, lastName,  }
-        })
+        res.json({ token, user })
     } catch (err) {
         console.log(err)
-        res.status(500).send('Internal server error : ' + err.message)
+        res.status(500).json({ message: 'Internal server error : ' + err.message })
     }
 })
+
 Router.post("/login", async (req, res) => {
     try {
         const { email } = req.body.credentials
@@ -33,11 +33,11 @@ Router.post("/login", async (req, res) => {
             console.log("user found");
             const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_KEY);
             res.json({
-                token, user: { email, firstName, lastName,  }
+                token, user: { email, firstName, lastName, }
             })
         } else {
             console.log("no user found");
-          
+            return res.status(400).json({ message: "user not found" })
         }
     } catch (err) {
         console.log(err)
