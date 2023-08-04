@@ -1,9 +1,10 @@
-import dotenv from "dotenv";
-import cors from "cors";
-import express from "express";
-import connectDB from "./database/connection.js";
-import Auth from "./API/Auth/index.js";
-dotenv.config();
+import dotenv from "dotenv"
+import cors from "cors"
+import express from "express"
+import connectDB from "./database/connection.js"
+import Auth from "./API/Auth/index.js"
+import PDF from "./API/PDF/index.js"
+dotenv.config()
 const app = express()
 app.use(express.urlencoded({ extended: true }));
 app.use(cors())
@@ -16,8 +17,8 @@ app.get("/", async (req, res) => {
         console.log(err);
     }
 })
-app.use("/auth",Auth)
-
+app.use("/auth", Auth)
+app.use("/pdf", PDF)
 
 
 
