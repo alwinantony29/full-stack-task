@@ -10,6 +10,10 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../config/firebase';
+import axios from 'axios';
+import { axiosInstance } from '../../config/axios';
 // import { signInWithEmailAndPassword } from "firebase/auth";
 // import { auth } from '../../config/firebase';
 
@@ -20,20 +24,22 @@ export default function Login() {
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        console.log({
-            email: data.get('email'),
-            password: data.get('password'),
-        })
-        // signInWithEmailAndPassword(auth, email, password)
-        //     .then((userCredential) => {
-        //         // Signed in 
-        //         const user = userCredential.user;
-        //         // ...
-        //     })
-        //     .catch((error) => {
-        //         const errorCode = error.code;
-        //         const errorMessage = error.message;
-        //     })
+        const password = data.get('password')
+        const email = data.get('email')
+        signInWithEmailAndPassword(auth, email, password)
+            .then(async (userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+                console.log(user);
+                const credentials = { email }
+                const response = await axiosInstance.post("/login", credentials)
+                console.log(response);
+            })
+            .catch((error) => {
+                console.log(error);
+                const errorCode = error.code;
+                const errorMessage = error.message;
+            })
 
     };
 
