@@ -32,7 +32,7 @@ const FileUploadForm = () => {
                 formData.append('pdfFile', selectedFile);
                 const result = await axiosInstance.post("/pdf", formData)
                 console.log(result);
-                toast.success("yea")
+                toast.success(result.data.message)
             } catch (error) {
                 console.log(error);
                 toast.error(error.response.data.message)

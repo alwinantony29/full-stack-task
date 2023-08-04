@@ -11,12 +11,9 @@ app.use(cors())
 app.use(express.json())
 
 app.get("/", async (req, res) => {
-    try {
-        res.send("Hi from server")
-    } catch (err) {
-        console.log(err);
-    }
+    res.send("Hi from server")
 })
+
 app.use("/auth", Auth)
 app.use("/pdf", PDF)
 

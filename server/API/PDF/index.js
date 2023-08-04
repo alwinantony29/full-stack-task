@@ -4,6 +4,8 @@ import multer from 'multer'
 import path from 'path'
 import PdfModel from "../../database/pdf/index.js";
 import { verifyToken } from "../../middleware/index.js";
+import fs from 'fs'
+
 // Configuring Multer to handle file uploads
 const storage = multer.diskStorage({
     destination: 'uploads/',
@@ -17,11 +19,36 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage });
 
-Router.get("/:pdfID", (req, res) => {
+Router.get("/", (req, res) => {
+    res.send("hi")
+})
 
-    console.log(req.params.pdfID);
-    console.log("get api")
-    res.send("hai bro")
+Router.get("/:pdfID", async (req, res) => {
+
+    console.log("get api call")
+    const pdfID = req.params.pdfID
+    try {
+        const result = await PdfModel.findById(pdfID)
+        console.log(result)
+        const filePath = path.join('uploads', result.fileName);
+        console.log(filePath);
+        // Checking if the file exists or not
+        if (fs.existsSync(filePath)) {
+            console.log("file nd scnnnnnn");
+            // setting the appropriate Content-Type for PDF
+            res.setHeader('Content-Type', 'application/pdf');
+
+            // Streaming the file to the response
+            const fileStream = fs.createReadStream(filePath);
+            fileStream.pipe(res);
+        } else {
+            res.status(404).json({ error: 'PDF file not found.' });
+        }
+        res.send("hai bro")
+    } catch (error) {
+        console.log(error);
+        res.send("server error")
+    }
 
 })
 

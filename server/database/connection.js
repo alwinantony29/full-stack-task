@@ -8,7 +8,6 @@ const connectDB = async () => {
         useUnifiedTopology: true,
     });
 
-    mongoose.connection.db = "pdfExtractor"; //  database name
     console.log('Database connected');
 };
 
