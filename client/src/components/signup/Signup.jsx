@@ -11,11 +11,12 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { axiosInstance } from "../../config/axios";
+import { axiosInstance, updateToken } from "../../config/axios";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../../config/firebase';
 import { useState } from 'react';
-
+import { toast, Toaster, } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const defaultTheme = createTheme();
 
@@ -24,26 +25,33 @@ export default function SignUp() {
     const [lastName, setLastName] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-
+    const navigate = useNavigate()
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-
             console.log({
                 email,
                 password,
                 firstName,
                 lastName
             })
-            const userCredential= await createUserWithEmailAndPassword(auth, email, password)
-            const user = userCredential.user;
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+            // const user = userCredential.user;
             // console.log(user);
-            const credentials = { email, firstName, lastName }
-            const result = axiosInstance.post("/signin", credentials)
+            const credentials = { email: email, firstName: firstName, lastName: lastName }
+            const result = await axiosInstance.post("/auth/signin", { credentials })
+            console.log(result);
+            const { token, user } = result.data
+            toast.success("Signup succesfull")
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('user', JSON.stringify(user))
+            updateToken(token)
+            navigate('/')
         } catch (error) {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    console.log(errorCode,errorMessage);
+            console.log("error",error);
+            const errorCode = error.code || "Something went wrong"
+            const errorMessage = error.message;
+            toast.error(errorCode);
         }
     }
 
@@ -131,7 +139,7 @@ export default function SignUp() {
                         </Button>
                         <Grid container justifyContent="flex-end">
                             <Grid item>
-                                <Link href="#" variant="body2">
+                                <Link href="/login" variant="body2">
                                     Already have an account? Sign in
                                 </Link>
                             </Grid>

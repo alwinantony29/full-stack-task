@@ -12,15 +12,16 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
-import axios from 'axios';
-import { axiosInstance } from '../../config/axios';
-// import { signInWithEmailAndPassword } from "firebase/auth";
-// import { auth } from '../../config/firebase';
+import { axiosInstance, updateToken } from '../../config/axios';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 
 const defaultTheme = createTheme();
 
 export default function Login() {
+    const navigate=useNavigate()
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -29,16 +30,26 @@ export default function Login() {
         signInWithEmailAndPassword(auth, email, password)
             .then(async (userCredential) => {
                 // Signed in 
-                const user = userCredential.user;
-                console.log(user);
-                const credentials = { email }
-                const response = await axiosInstance.post("/login", credentials)
-                console.log(response);
+                try {
+                    const credentials = { email: email }
+                    const response = await axiosInstance.post("auth/signin", { credentials })
+                    console.log(response);
+                    const { token, user } = response.data
+                    sessionStorage.setItem('token', token);
+                    sessionStorage.setItem('user', JSON.stringify(user))
+                    updateToken(token)
+                    navigate('/')
+                    toast.success("Login Successfull")
+                } catch (error) {
+                    toast.error(error.response?.data.message)
+                    console.log("BE", error);
+                }
             })
             .catch((error) => {
-                console.log(error);
+                console.log("firebase", error);
                 const errorCode = error.code;
                 const errorMessage = error.message;
+                toast.error(errorCode)
             })
 
     };
@@ -59,7 +70,7 @@ export default function Login() {
                         <LockOutlinedIcon />
                     </Avatar>
                     <Typography component="h1" variant="h5">
-                        Sign in
+                        Login
                     </Typography>
                     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
                         <TextField
@@ -97,7 +108,7 @@ export default function Login() {
                                 </Link>
                             </Grid>
                             <Grid item>
-                                <Link href="#" variant="body2">
+                                <Link href="/signup" variant="body2">
                                     {"Don't have an account? Sign Up"}
                                 </Link>
                             </Grid>
