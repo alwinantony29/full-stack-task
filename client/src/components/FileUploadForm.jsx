@@ -1,5 +1,5 @@
 import { useState } from 'react';
-
+import { axiosInstance } from "../config/axios";
 const FileUploadForm = () => {
 
     const [selectedFile, setSelectedFile] = useState(null);
@@ -23,8 +23,10 @@ const FileUploadForm = () => {
         event.preventDefault();
 
         if (selectedFile) {
+            console.log();
             const formData = new FormData();
             formData.append('pdfFile', selectedFile);
+            axiosInstance.post("/pdf",formData)
         } else {
             setError('Please select a valid PDF file before submitting.');
         }
