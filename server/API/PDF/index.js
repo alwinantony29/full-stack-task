@@ -25,29 +25,26 @@ Router.get("/", (req, res) => {
 
 Router.get("/:pdfID", async (req, res) => {
 
-    console.log("get api call")
     const pdfID = req.params.pdfID
+    console.log("pdf id from params : ", pdfID);
     try {
         const result = await PdfModel.findById(pdfID)
-        console.log(result)
+        console.log("result from db : ", result)
         const filePath = path.join('uploads', result.fileName);
-        console.log(filePath);
         // Checking if the file exists or not
         if (fs.existsSync(filePath)) {
-            console.log("file nd scnnnnnn");
+            console.log("file found");
             // setting the appropriate Content-Type for PDF
-            res.setHeader('Content-Type', 'application/pdf');
-
+            res.setHeader('Content-Type', 'application/blob');
             // Streaming the file to the response
             const fileStream = fs.createReadStream(filePath);
             fileStream.pipe(res);
         } else {
             res.status(404).json({ error: 'PDF file not found.' });
         }
-        res.send("hai bro")
     } catch (error) {
         console.log(error);
-        res.send("server error")
+        res.status(500).json({ message: 'Internal server error : ' + error.message })
     }
 
 })
