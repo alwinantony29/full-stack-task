@@ -15,12 +15,13 @@ import { auth } from '../../config/firebase';
 import { axiosInstance, updateToken } from '../../config/axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-
+import { useUser } from "../../store/UserContext";
 
 const defaultTheme = createTheme();
 
 export default function Login() {
-    const navigate=useNavigate()
+    const { setUser } = useUser()
+    const navigate = useNavigate()
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -38,6 +39,7 @@ export default function Login() {
                     sessionStorage.setItem('token', token);
                     sessionStorage.setItem('user', JSON.stringify(user))
                     updateToken(token)
+                    setUser(user)
                     navigate('/')
                     toast.success("Login Successfull")
                 } catch (error) {

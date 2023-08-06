@@ -17,7 +17,7 @@ import { auth } from '../../config/firebase';
 import { useState } from 'react';
 import { toast, Toaster, } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-
+import { useUser } from "../../store/UserContext";
 const defaultTheme = createTheme();
 
 export default function SignUp() {
@@ -26,31 +26,26 @@ export default function SignUp() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const navigate = useNavigate()
+    const { setUser } = useUser()
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            console.log({
-                email,
-                password,
-                firstName,
-                lastName
-            })
+            //firebase authentication
             const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-            // const user = userCredential.user;
-            // console.log(user);
             const credentials = { email: email, firstName: firstName, lastName: lastName }
+            // saving user cred to server
             const result = await axiosInstance.post("/auth/signin", { credentials })
-            console.log(result);
             const { token, user } = result.data
+            setUser(user)
             toast.success("Signup succesfull")
             sessionStorage.setItem('token', token);
             sessionStorage.setItem('user', JSON.stringify(user))
             updateToken(token)
             navigate('/')
         } catch (error) {
-            console.log("error",error);
-            const errorCode = error.code || "Something went wrong"
-            const errorMessage = error.message;
+            console.log(error);
+            const errorCode = error.code || "Couldnt sign up"
             toast.error(errorCode);
         }
     }
