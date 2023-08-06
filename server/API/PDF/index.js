@@ -1,23 +1,12 @@
 import express from "express";
 const Router = express.Router()
-import multer from 'multer'
 import path from 'path'
 import PdfModel from "../../database/pdf/index.js";
-import { verifyToken } from "../../middleware/index.js";
+import { upload, verifyToken } from "../../middleware/index.js";
 import fs from 'fs'
+import { PDFDocument, rgb } from "pdf-lib";
+import { Readable } from 'stream'
 
-// Configuring Multer to handle file uploads
-const storage = multer.diskStorage({
-    destination: 'uploads/',
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const extension = path.extname(file.originalname);
-        const originalFilenameWithoutExtension = path.parse(file.originalname).name;
-        const customFilename = originalFilenameWithoutExtension + '-' + uniqueSuffix + extension;
-        cb(null, customFilename);
-    },
-})
-const upload = multer({ storage });
 
 Router.get("/", (req, res) => {
     res.send("hi")
@@ -30,6 +19,9 @@ Router.get("/:pdfID", async (req, res) => {
     try {
         const result = await PdfModel.findById(pdfID)
         console.log("result from db : ", result)
+        if (!result) {
+            return res.status(404).json({ message: " File not found !" })
+        }
         const filePath = path.join('uploads', result.fileName);
         // Checking if the file exists or not
         if (fs.existsSync(filePath)) {
@@ -40,13 +32,59 @@ Router.get("/:pdfID", async (req, res) => {
             const fileStream = fs.createReadStream(filePath);
             fileStream.pipe(res);
         } else {
-            res.status(404).json({ error: 'PDF file not found.' });
+            res.status(404).json({ message: 'PDF file not found.' });
         }
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Internal server error : ' + error.message })
     }
+})
+Router.post("/:pdfID", async (req, res) => {
+    const selectedPages = req.body.selectedPages;
+    if (!selectedPages.length > 0) {
+        return res.status(400).json({ message: "Select atleast one page" })
+    }
+    const pdfID = req.params.pdfID
+    console.log(selectedPages, pdfID);
+    try {
+        const result = await PdfModel.findById(pdfID)
+        console.log("result from db : ", result)
+        if (!result) {
+            return res.status(404).json({ message: " File not found !" })
+        }
+        // Loading the uploaded PDF file
+        const pdfBuffer = fs.readFileSync('uploads/' + result.fileName);
+        const pdfDoc = await PDFDocument.load(pdfBuffer);
 
+        // Creating a new PDF document to store selected pages
+        const newPdfDoc = await PDFDocument.create();
+
+        // Looping through the selected pages and copying them to the new PDF
+        for (const pageNum of selectedPages) {
+            const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [pageNum - 1]); // pageNum - 1 to get the zero-based index
+            newPdfDoc.addPage(copiedPage);
+        }
+
+        // Saving the new PDF to a buffer
+        const pdfBytes = await newPdfDoc.save();
+
+        // Set the content type of the response to 'application/pdf'
+        res.setHeader('Content-Type', 'application/pdf');
+
+        // Set the filename for the response (optional)
+        res.setHeader('Content-Disposition', 'attachment; filename="new-' + result.fileName + '"');
+
+        // Createing a custom Readable stream and pushing the pdfBytes data in chunks manually
+        const pdfStream = new Readable();
+        pdfStream._read = () => { };
+        pdfStream.push(pdfBytes);
+        pdfStream.push(null); // Signal the end of the stream
+        pdfStream.pipe(res);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Internal server error : ' + error.message })
+    }
 })
 
 Router.post("/", verifyToken, upload.single('pdfFile'), async (req, res) => {
@@ -54,7 +92,6 @@ Router.post("/", verifyToken, upload.single('pdfFile'), async (req, res) => {
         console.log("No PDF file uploaded.");
         return res.status(400).json({ message: 'No PDF file uploaded.' });
     }
-    console.log("file nd");
     console.log(req.file);
     const { originalname, filename } = req.file
     try {
