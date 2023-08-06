@@ -8,8 +8,15 @@ import { PDFDocument, rgb } from "pdf-lib";
 import { Readable } from 'stream'
 
 
-Router.get("/", (req, res) => {
-    res.send("hi")
+Router.get("/",verifyToken, async(req, res) => {
+    try{
+            const result= await PdfModel.find({userID:req.user._id})
+            res.json({result})
+
+    }catch(error){
+        console.log(error);
+        res.status(500).json({ message: 'Internal server error : ' + error.message })
+    }
 })
 
 Router.get("/:pdfID", async (req, res) => {
@@ -97,7 +104,8 @@ Router.post("/", verifyToken, upload.single('pdfFile'), async (req, res) => {
     try {
         const file = new PdfModel({ originalName: originalname, fileName: filename, userID: req.user._id })
         await file.save()
-        res.json({ message: 'PDF file uploaded successfully.' });
+        console.log("saved",file);
+        res.json({ message: 'PDF file uploaded successfully.',file });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Internal server error : ' + err.message })
