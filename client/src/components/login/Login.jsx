@@ -1,4 +1,3 @@
-// import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -20,6 +19,7 @@ import { useUser } from "../../store/UserContext";
 const defaultTheme = createTheme();
 
 export default function Login() {
+
     const { setUser } = useUser()
     const navigate = useNavigate()
 
@@ -29,12 +29,11 @@ export default function Login() {
         const password = data.get('password')
         const email = data.get('email')
         signInWithEmailAndPassword(auth, email, password)
-            .then(async (userCredential) => {
+            .then(async () => {
                 // Signed in 
                 try {
                     const credentials = { email: email }
                     const response = await axiosInstance.post("auth/signin", { credentials })
-                    console.log(response);
                     const { token, user } = response.data
                     sessionStorage.setItem('token', token);
                     sessionStorage.setItem('user', JSON.stringify(user))
@@ -44,7 +43,7 @@ export default function Login() {
                     toast.success("Login Successfull")
                 } catch (error) {
                     toast.error(error.response?.data.message)
-                    console.log("BE", error);
+                    console.log(error);
                 }
             })
             .catch((error) => {
@@ -103,17 +102,10 @@ export default function Login() {
                         >
                             Sign In
                         </Button>
-                        <Grid container>
-                            <Grid item xs>
-                                <Link href="#" variant="body2">
-                                    Forgot password?
-                                </Link>
-                            </Grid>
-                            <Grid item>
-                                <Link href="/signup" variant="body2">
-                                    {"Don't have an account? Sign Up"}
-                                </Link>
-                            </Grid>
+                        <Grid item>
+                            <Link href="/signup" variant="body2">
+                                {"Don't have an account? Sign Up"}
+                            </Link>
                         </Grid>
                     </Box>
                 </Box>

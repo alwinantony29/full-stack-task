@@ -1,5 +1,5 @@
 import { Box, Chip, Paper, Typography } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, } from 'react'
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from '../config/axios';
 import { toast } from "react-hot-toast";

@@ -9,9 +9,11 @@ export const useUser = () => {
 const UserProvider = ({ children }) => {
 
     const [user, setUser] = useState()
+    
     useEffect(() => {
         console.log("useeffect", user);
     }, [user])
+
     return (
         <UserContext.Provider value={{ user, setUser }}>
             {children}

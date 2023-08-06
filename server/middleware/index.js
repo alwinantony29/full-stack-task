@@ -5,7 +5,7 @@ import path from 'path'
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']
     if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
+        return res.status(401).json({ message: 'Seems like you are not logged In' });
     }
     jwt.verify(token.split(' ')[1], process.env.JWT_KEY, (err, decoded) => {
         if (err) {
@@ -32,4 +32,4 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-export {verifyToken,upload}
+export { verifyToken, upload }

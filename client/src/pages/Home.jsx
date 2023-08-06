@@ -5,17 +5,15 @@ import { Stack } from '@mui/material'
 import PdfProvider from '../store/pdfListContext'
 
 const Home = () => {
-  const [pdfList, setPdfList] = useState([])
 
   return (
     <PdfProvider>
 
       <Stack gap={2}>
 
-        <FileUploadForm setPdfList={setPdfList} />
+        <FileUploadForm />
 
-        <MyPDFs setPdfList={setPdfList} pdfList={pdfList} />
-
+        <MyPDFs />
 
       </Stack>
 
