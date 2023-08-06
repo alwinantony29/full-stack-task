@@ -26,8 +26,6 @@ const FileUploadForm = () => {
 
         if (selectedFile) {
             try {
-
-                console.log();
                 const formData = new FormData();
                 formData.append('pdfFile', selectedFile);
                 const result = await axiosInstance.post("/pdf", formData)

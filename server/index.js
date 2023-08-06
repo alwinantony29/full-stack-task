@@ -17,8 +17,6 @@ app.get("/", async (req, res) => {
 app.use("/auth", Auth)
 app.use("/pdf", PDF)
 
-
-
 // connecting to database 
 connectDB().then(() => {
     // Starting the server
