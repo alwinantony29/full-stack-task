@@ -8,7 +8,7 @@ Developed a web application that allows users to upload a PDF file and extract c
 
 **Client:** React, Material UI
 
-**Server:** Node, Express 
+**Server:** Node, Express , MongoDB
 
 
 ## Features
