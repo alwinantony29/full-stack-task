@@ -1,6 +1,4 @@
 import jwt from "jsonwebtoken";
-import multer from 'multer'
-import path from 'path'
 
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']
@@ -18,18 +16,7 @@ const verifyToken = (req, res, next) => {
     })
 }
 
-// Configuring Multer to handle file uploads
-const storage = multer.diskStorage({
-    destination: 'uploads/',
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const extension = path.extname(file.originalname);
-        const originalFilenameWithoutExtension = path.parse(file.originalname).name;
-        const customFilename = originalFilenameWithoutExtension + '-' + uniqueSuffix + extension;
-        cb(null, customFilename);
-    },
-})
-const upload = multer({ storage });
 
 
-export { verifyToken, upload }
+
+export { verifyToken }

@@ -5,6 +5,7 @@ import connectDB from "./database/connection.js"
 import Auth from "./API/Auth/index.js"
 import PDF from "./API/PDF/index.js"
 dotenv.config()
+
 const app = express()
 app.use(express.urlencoded({ extended: true }));
 app.use(cors())

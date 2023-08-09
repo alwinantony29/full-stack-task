@@ -1,11 +1,12 @@
 import express from "express";
 const Router = express.Router()
-import path from 'path'
 import PdfModel from "../../database/pdf/index.js";
-import { upload, verifyToken } from "../../middleware/index.js";
+import { verifyToken } from "../../middleware/index.js";
 import fs from 'fs'
-import { PDFDocument, rgb } from "pdf-lib";
 import { Readable } from 'stream'
+import { getPdfPath, manipulatePdf } from "../../services/PDFservices.js";
+import multer from "multer";
+import { upload } from "../../config/multer.js";
 
 
 Router.get("/", verifyToken, async (req, res) => {
@@ -31,65 +32,51 @@ Router.post("/", verifyToken, upload.single('pdfFile'), async (req, res) => {
         res.json({ message: 'PDF file uploaded successfully.', file });
     } catch (error) {
         console.log(error);
+        if (error instanceof multer.MulterError) {
+            return res.status(400).json({ message: 'File upload error: ' + error.message });
+        }
         res.status(500).json({ message: 'Internal server error : ' + err.message })
     }
 })
 
-Router.get("/:pdfID", async (req, res) => {
+Router.get("/:pdfID", verifyToken, async (req, res) => {
 
     const pdfID = req.params.pdfID
+
     try {
-        const result = await PdfModel.findById(pdfID)
-        if (!result) {
-            return res.status(404).json({ message: " File not found !" })
-        }
-        const filePath = path.join('uploads', result.fileName);
+        const filePath = await getPdfPath(pdfID)
         // Checking if the file exists or not
-        if (fs.existsSync(filePath)) {
-            // setting the appropriate Content-Type for PDF
-            res.setHeader('Content-Type', 'application/blob');
-            // Streaming the file to the response
-            const fileStream = fs.createReadStream(filePath);
-            fileStream.pipe(res);
-        } else {
-            console.log("File not found");
-            res.status(404).json({ message: 'PDF file not found.' });
+        if (!filePath) {
+            return res.status(404).json({ message: "File not found!" });
         }
+        // setting the appropriate Content-Type for PDF
+        res.setHeader('Content-Type', 'application/blob');
+
+        // Streaming the file to the response
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res)
+
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Internal server error : ' + error.message })
     }
 })
-Router.post("/:pdfID", async (req, res) => {
+
+Router.post("/:pdfID", verifyToken, async (req, res) => {
+
+    const pdfID = req.params.pdfID
     const selectedPages = req.body.selectedPages;
-    if (!selectedPages.length > 0) {
+
+    if (selectedPages.length < 1) {
         return res.status(400).json({ message: "Select atleast one page" })
     }
-    const pdfID = req.params.pdfID
     try {
-        const result = await PdfModel.findById(pdfID)
-        if (!result) {
-            return res.status(404).json({ message: " File not found !" })
+
+        const pdfBytes = await manipulatePdf(pdfID, selectedPages);
+        if (!pdfBytes) {
+            return res.status(404).json({ message: "File not found!" });
         }
-        // Loading the uploaded PDF file
-        const pdfBuffer = fs.readFileSync('uploads/' + result.fileName);
-        const pdfDoc = await PDFDocument.load(pdfBuffer);
-
-        // Creating a new PDF document to store selected pages
-        const newPdfDoc = await PDFDocument.create();
-
-        // Looping through the selected pages and copying them to the new PDF
-        for (const pageNum of selectedPages) {
-            const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [pageNum - 1]); // pageNum - 1 to get the zero-based index
-            newPdfDoc.addPage(copiedPage);
-        }
-
-        // Saving the new PDF to a buffer
-        const pdfBytes = await newPdfDoc.save();
-
         res.setHeader('Content-Type', 'application/pdf');
-
-        res.setHeader('Content-Disposition', 'attachment; filename="new-' + result.fileName + '"');
 
         // Creating a custom Readable stream and pushing the pdfBytes data in chunks manually
         const pdfStream = new Readable();
@@ -103,7 +90,6 @@ Router.post("/:pdfID", async (req, res) => {
         res.status(500).json({ message: 'Internal server error : ' + error.message })
     }
 })
-
 
 
 export default Router
